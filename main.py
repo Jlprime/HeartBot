@@ -2,7 +2,9 @@ from datetime import datetime
 import os, logging, threading, schedule, random
 from time import time, sleep
 from dotenv import load_dotenv
-from telebot import TeleBot
+from telebot import TeleBot, custom_filters
+from telebot.handler_backends import State, StatesGroup
+from telebot.storage import StateMemoryStorage
 from telebot.types import BotCommand, InlineKeyboardMarkup, InlineKeyboardButton
 from telebot.apihelper import ApiTelegramException
 from fetch import database_init, fetch
@@ -20,7 +22,7 @@ announcement_key_mappings = {
     'EventName': 'Event Title',
     'Organizer': 'Organiser',
     'EventLocation': 'Event Location',
-    'Event Date': 'Event Date and Time',
+    'EventDate': 'Event Date',
 }
 
 announcement_value_mappings = {
@@ -38,7 +40,15 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-bot = TeleBot(TOKEN)
+state_storage = StateMemoryStorage()
+bot = TeleBot(TOKEN,state_storage=state_storage)
+
+# States Group
+class SearchQuery(StatesGroup):
+    # Just name variables differently
+    portal = State() # creating instances of State class is enough from now
+    event_date = State()
+    event_location = State()
 
 def is_subscribed(channel_id, user_id):
     try:
@@ -71,28 +81,45 @@ def send_welcome(message):
 
 def send_announcement_to(chat_id):
     results = fetch(engine, TABLE_NAME, 'EventDate', '<=', time() + 864000)
-    results_sample = random.sample(results, 3)
+    results_sample = random.sample(results, 1)
     # DEBUG and logger.info(results_sample)
 
     for i, result in enumerate(results_sample):
-        DEBUG and logger.info(i)
-        DEBUG and logger.info(result)
         caption_msg = ''
         signup = ''
-        # ['Portal', 'EventName', 'Organizer', 'EventLocation', 'EventDate', 'Vacancies', 'SignupLink', 'Suitability', 'ShortDesc', 'id']
+        image_url = ''
+        # ['Portal', 'EventName', 'Organizer', 'EventLocation', 'EventDate', 'Vacancies', 'SignupLink', 'Suitability', 'ImageURL', 'id']
         for key, value in zip(headers, result):
             if key == 'EventDate':
                 date_value = datetime.fromtimestamp(float(value)).strftime('%a, %d %b %Y')
                 caption_msg += f'{announcement_key_mappings.get(key, key)}: {date_value}\n'
+            elif key == 'ImageURL':
+                image_url = value
             elif key != 'SignupLink':
                 if value:
                     caption_msg += f'{announcement_key_mappings.get(key, key)}: {announcement_value_mappings.get(value, value)}\n'
             else:
                 signup = value
-        DEBUG and logger.info(caption_msg)
+        DEBUG and logger.info(f'Current Iteration: {i}\nPayload: {result}')
         announcement_link = InlineKeyboardMarkup()
         announcement_link.add(InlineKeyboardButton('Sign me up!', url=signup))
-        bot.send_message(chat_id=chat_id,text=caption_msg,reply_markup=announcement_link)
+        bot.send_photo(chat_id=chat_id,photo=image_url,caption=caption_msg,reply_markup=announcement_link)
+
+@bot.message_handler(state="*", commands='cancel')
+def any_state(message):
+    """
+    Cancel state
+    """
+    bot.send_message(message.chat.id, "Your query was cancelled.")
+    bot.delete_state(message.from_user.id, message.chat.id)
+
+@bot.message_handler(commands=['search'])
+def send_search(message):
+    bot.set_state(message.from_user.id, SearchQuery.Portal, message.chat.id)
+    bot.send_message(message.chat.id, '')
+
+bot.add_custom_filter(custom_filters.StateFilter(bot))
+bot.add_custom_filter(custom_filters.IsDigitFilter())
 
 bot.set_my_commands([
     BotCommand('start','Initialisation'),
