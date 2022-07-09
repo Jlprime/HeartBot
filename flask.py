@@ -17,7 +17,7 @@ def starting_url():
 app.run(host="0.0.0.0", port=8080) """
 
 GIVING_SG = ['Title','DisplayName','Town','Duration','Openings','VolunteerUrl','Suitabilities']
-VOLUNTEER_SG = ['Name', 'AgencyName', 'Geolocations.AddressPostalCode','StartDateTime', None, 'RedirectionURL', 'OpportunitySkills.SkillsetName']
+VOLUNTEER_SG = ['Name', 'AgencyName', 'AddressTooltip','StartDateTime', 'None', 'RedirectionURL', 'None']
 
 def append_db(json_input):
     PLATFORM, PORTAL = '', ''
@@ -32,18 +32,19 @@ def append_db(json_input):
 
     with engine.connect() as connection:
         for i in entries:
-            j = flatten_dict(i)
-            print (j)
-            EVENTNAME = "\'" + j[PLATFORM[0]] + "\'"
-            ORGANIZER = "\'" + j[PLATFORM[1]] + "\'"
-            EVENTLOCATION = "\'" + j[PLATFORM[2]] + "\'"
-            EVENTDATE = "\'" + j[PLATFORM[3]] + "\'"
-            if PLATFORM[4] != None:
-                VACANCIES = j[PLATFORM[4]]
+            EVENTNAME = "\'" + i[PLATFORM[0]] + "\'"
+            ORGANIZER = "\'" + i[PLATFORM[1]] + "\'"
+            EVENTLOCATION = "\'" + i[PLATFORM[2]].split()[-1] + "\'"
+            EVENTDATE = "\'" + i[PLATFORM[3]] + "\'"
+            if PLATFORM[4] != 'None':
+                VACANCIES = i[PLATFORM[4]]
             else:
-                VACANCIES = None
-            SIGNUPLINK = "\'" + j[PLATFORM[5]] + "\'"
-            SUITABILITY = "\'" + j[PLATFORM[6]] + "\'"
+                VACANCIES = 0
+            SIGNUPLINK = "\'" + i[PLATFORM[5]] + "\'"
+            if PLATFORM[6] != 'None':
+                SUITABILITY = "\'" + i[PLATFORM[6]] + "\'"
+            else:
+                SUITABILITY = "\'None\'"
 
             COMMAND=f'''INSERT INTO VolunteerOpportunities(Portal, EventName, Organizer, EventLocation, EventDate, Vacancies, SignupLink, Suitability)
                         VALUES({PORTAL},{EVENTNAME},{ORGANIZER},{EVENTLOCATION},{EVENTDATE},{VACANCIES},{SIGNUPLINK},{SUITABILITY})'''
