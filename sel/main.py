@@ -27,9 +27,10 @@ def setup():
   driver.implicitly_wait(5)
 
 def scrape_url(url):
+  print(f"Scraping {url}")
   driver.get(url)
-  sleep(1)
-  body = driver.find_element_by_xpath('/html/body')
+  sleep(3)
+  body = driver.find_element_by_xpath('/html')
   code = body.get_attribute('outerHTML')
   return code
 
@@ -116,13 +117,33 @@ def teardown():
 
 setup()
 
-giving_sg_data = giving_sg_index(999)
-with open("/srv/output/giving_sg_data.json", "w") as f:
-  json.dump(giving_sg_data, f)
+# giving_sg_data = giving_sg_index(999)
+# with open("/srv/output/giving_sg_data.json", "w") as f:
+#   json.dump(giving_sg_data, f)
 
-volunteer_gov_sg_data = volunteer_gov_sg_index(999)
-with open("/srv/output/volunteer_gov_sg_data.json", "w") as f:
-  json.dump(volunteer_gov_sg_data, f)
+# volunteer_gov_sg_data = volunteer_gov_sg_index(999)
+# with open("/srv/output/volunteer_gov_sg_data.json", "w") as f:
+#   json.dump(volunteer_gov_sg_data, f)
+
+with open("/srv/output/volunteer_gov_sg_data.json", "r") as f:
+  volunteer_gov_sg_data = json.load(f)
+
+volunter_gov_sg_detail_data = []
+for idx, entry in enumerate(volunteer_gov_sg_data['entries'][150:]):
+  print(idx)
+  url = "https://www.volunteer.gov.sg" + entry['RedirectionURL']
+  res = scrape_url(url)
+  volunter_gov_sg_detail_data.append({
+    "url": url,
+    "html": res
+  })
+
+with open("/srv/output/volunteer_gov_sg_detail_data_4.json", "w") as f:
+  json.dump({
+    "source": "volunteer-gov-sg-detail",
+    "pages": len(volunter_gov_sg_detail_data),
+    "entries": volunter_gov_sg_detail_data
+  }, f)
 
 teardown()
 
