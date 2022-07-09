@@ -1,10 +1,8 @@
-#from flask import Flask
 from typing import List
 from sqlalchemy import create_engine, insert, text
 import json
 from collections.abc import MutableMapping
 
-#app = Flask(__name__)
 engine = create_engine('sqlite:///scraped_data.db')
 
 
