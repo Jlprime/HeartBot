@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  scraper:
+    # image: joyzoursky/python-chromedriver:3.9-alpine-selenium
+    build: ./image/
+    volumes:
+      - ./:/srv/scraper:ro
+      - ./output:/srv/output
+    entrypoint: ["python3", "/srv/scraper/main.py"]
