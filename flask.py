@@ -1,20 +1,8 @@
-from typing import List
-from numpy import number
 from sqlalchemy import create_engine, insert, text
 import json
-from collections.abc import MutableMapping
 from datetime import datetime
 
 engine = create_engine('sqlite:///scraped_data.db')
-
-
-""" @app.route("/", methods=["GET"])
-def starting_url():
-    json_data = flask.request.json
-    a_value = json_data["a_key"]
-    return "JSON value sent: " + a_value
-
-app.run(host="0.0.0.0", port=8080) """
 
 GIVING_SG = ['Title','DisplayName','Town','Duration','Openings','VolunteerUrl','Suitabilities']
 VOLUNTEER_SG = ['Name', 'AgencyName', 'AddressTooltip','StartDateTime', 'None', 'RedirectionURL', 'None']
@@ -40,7 +28,7 @@ def append_db(json_input):
                 VACANCIES = i[PLATFORM[4]]
             else:
                 VACANCIES = 0
-            SIGNUPLINK = "\'" + i[PLATFORM[5]] + "\'"
+            SIGNUPLINK = "\'" + convert_link(i[PLATFORM[5]], data['source']) + "\'"
             if PLATFORM[6] != 'None':
                 SUITABILITY = "\'" + i[PLATFORM[6]] + "\'"
             else:
@@ -51,23 +39,6 @@ def append_db(json_input):
 
             connection.execute(COMMAND)
 
-def rem_lis(lis):
-    return lis[0]
-    
-
-def _flatten_dict_gen(d, parent_key, sep):
-    for i, j in d.items():
-        new_key = parent_key + sep + i if parent_key else i
-        if isinstance(j, MutableMapping):
-            yield from flatten_dict(j, new_key, sep=sep).items()
-        elif type(j) == list:
-            yield new_key, rem_lis(j)
-        else:
-            yield new_key, j
-
-def flatten_dict(d: MutableMapping, parent_key: str = '', sep: str = '.'):
-    return dict(_flatten_dict_gen(d, parent_key, sep))
-
 def convert_datetime(val, source):
     if source == 'giving-sg':
         result = int(datetime.strptime(val, '%a, %d %b %Y').timestamp())
@@ -77,5 +48,10 @@ def convert_datetime(val, source):
         result = int(''.join(number_list)) // 1000
         return result
 
+def convert_link(val, source):
+    if source == 'giving-sg':
+        return "https://www.giving.sg" + val
+    else:
+        return "https://www.volunteer.gov.sg/" + val
 
-append_db('test.json')
+append_db('test_giving.json')
