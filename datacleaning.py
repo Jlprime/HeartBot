@@ -1,4 +1,5 @@
 from geopy.geocoders import Nominatim
+from datetime import datetime
 
 MRT_STATIONS = [
     ('BUANGKOK', [103.893146827404, 1.38216324197588]),
@@ -19,7 +20,7 @@ MRT_STATIONS = [
     ('YISHUN', [103.835074105665, 1.42930825458239]),
     ('PUNGGOL', [103.902268512135, 1.40472215581355]),
     ('CHOA ', [103.744106037612, 1.38527561751461]),
-    ('YEW  TEE', [103.747406162943, 1.39713488963351]),
+    ('YEW TEE', [103.747406162943, 1.39713488963351]),
     ('BUKIT GOMBAK', [103.75199562073, 1.35818887593322]),
     ('NEWTON', [103.837866672146, 1.31226538751841]),
     ('KALLANG', [103.871245166007, 1.31140491532864]),
@@ -27,10 +28,10 @@ MRT_STATIONS = [
     ('BOON KENG', [103.861715490506, 1.31967380050244]),
     ('DHOBY GHAUT', [103.845491269803, 1.30015366079008]),
     ('OUTRAM PARK', [103.839723688673, 1.27993396473282]),
-    ('FARRER  ROAD', [103.807521427307, 1.31740665993945]),
+    ('FARRER ROAD', [103.807521427307, 1.31740665993945]),
     ('TELOK BLANGAH', [103.80957740752, 1.27046342874567]),
     ('LABRADOR PARK', [103.802465288115, 1.272111068813]),
-    ('BOON       LAY', [103.705604076176, 1.33824334270161]),
+    ('BOON LAY', [103.705604076176, 1.33824334270161]),
     ('BUONA', [103.791326636033, 1.30944129428447]),
     ('CHU KANG', [103.744456565922, 1.38509416941478]),
     ('GARDENS', [103.814908904607, 1.3218620926684]),
@@ -49,7 +50,7 @@ MRT_STATIONS = [
     ('GEYLANG BAHRU', [103.871830804307, 1.32142939137242]),
     ('UBI', [103.899104408224, 1.32975978142848]),
     ('JALAN BESAR', [103.855402169331, 1.3054206521765]),
-    ('ORCHARD  BOULEVARD', [103.823952336647, 1.30240246527113]),
+    ('ORCHARD BOULEVARD', [103.823952336647, 1.30240246527113]),
     ('MAXWELL', [103.843772420219, 1.28046324360043]),
     ('HILLVIEW', [103.767526438783, 1.36202999465646]),
     ('BUKIT PANJANG', [103.761319258645, 1.37950913341157]),
@@ -66,11 +67,11 @@ MRT_STATIONS = [
     ('NOVENA', [103.843715544085, 1.32015682352872]),
     ('SPRINGLEAF', [103.81776000956, 1.3987125092042]),
     ('NEWTON', [103.838016219263, 1.31357895255932]),
-    ('SIXTH    AVENUE', [103.797392817412, 1.33083425028905]),
+    ('SIXTH AVENUE', [103.797392817412, 1.33083425028905]),
     ('STEVENS', [103.825060748593, 1.32021550305314]),
     ('HARBOURFRONT', [103.820840757121, 1.26513306422402]),
     ('GARDENS BY THE BAY', [103.867607320753, 1.27862598919158]),
-    ('LITTLE  INDIA', [103.848463268266, 1.30716737848227]),
+    ('LITTLE INDIA', [103.848463268266, 1.30716737848227]),
     ('BEAUTY WORLD', [103.775766635976, 1.34163539051744]),
     ('CANBERRA', [103.829196864009, 1.44354013277492]),
     ('WOODLEIGH', [103.870911943187, 1.33862499725312]),
@@ -82,7 +83,7 @@ MRT_STATIONS = [
     ('PIONEER', [103.697083172399, 1.33746326613418]),
     ('BAHAR JUNCTION', [103.703388499123, 1.34622965683251]),
     ('GEK POH', [103.697934359302, 1.34823797315089]),
-    ('BOON    LAY', [103.70427773891, 1.33858016675639]),
+    ('BOON LAY', [103.70427773891, 1.33858016675639]),
     ('ENTERPRISE', [103.708566083028, 1.33213621209197]),
     ('TAWAS', [103.691706554517, 1.35063795977401]),
     ('PENG KANG HILL', [103.678411700692, 1.34324045976462]),
@@ -159,7 +160,7 @@ MRT_STATIONS = [
     ('BRADDELL', [103.846895683264, 1.34014411766572]),
     ('LENTOR', [103.835709635357, 1.38560339787789]),
     ('GARDENS', [103.816228338366, 1.32241944127039]),
-    ('TAN    KAH    KEE', [103.807296762562, 1.32594951213801]),
+    ('TAN KAH KEE', [103.807296762562, 1.32594951213801]),
     ('KING ALBERT PARK', [103.783918293793, 1.33562324372336]),
     ('MARINA SOUTH PIER', [103.863000308855, 1.27143967526742]),
     ('UPPER  CHANGI', [103.961355702477, 1.34082627723385]),
@@ -223,9 +224,30 @@ MRT_STATIONS = [
 geolocator = Nominatim(user_agent="heart_bot")
 
 def nearest(address):
-    location = geolocator.geocode(address)
-    latlong = [location.latitude, location.longitude][::-1]
-    def short_dis(latlong2):
-        return ((latlong[0]-latlong2[0])**2+(latlong[1]-latlong2[1])**2)**0.5
-    mapped = [(i[0], short_dis(i[1])) for i in MRT_STATIONS]
-    return min(mapped, key = lambda t: t[1])
+    if address == "Multiple Locations":
+        return "MULTIPLE LOCATIONS"
+    else:
+        location = geolocator.geocode(address)
+        try:
+            latlong = [location.latitude, location.longitude][::-1]
+            def short_dis(latlong2):
+                return ((latlong[0]-latlong2[0])**2+(latlong[1]-latlong2[1])**2)**0.5
+            mapped = [(i[0], short_dis(i[1])) for i in MRT_STATIONS]
+            return min(mapped, key = lambda t: t[1])[0]
+        except:
+            return ''
+
+def convert_datetime(val, source):
+    if source == 'giving-sg':
+        result = int(datetime.strptime(val, '%a, %d %b %Y').timestamp())
+        return result
+    else:
+        number_list = [s for s in val if s.isdigit()]
+        result = int(''.join(number_list)) // 1000
+        return result
+
+def convert_link(val, source):
+    if source == 'giving-sg':
+        return "https://www.giving.sg" + val
+    else:
+        return "https://www.volunteer.gov.sg/" + val
