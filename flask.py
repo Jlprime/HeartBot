@@ -4,8 +4,8 @@ import json
 
 engine = create_engine('sqlite:///scraped_data.db')
 
-GIVING_SG = ['Title','DisplayName','Town','Duration','Openings','VolunteerUrl','Suitabilities']
-VOLUNTEER_SG = ['Name', 'AgencyName', 'Address','StartDateTime', 'None', 'RedirectionURL', 'None']
+GIVING_SG = ['Title','DisplayName','Town','Duration','Openings','VolunteerUrl','Suitabilities', 'Url']
+VOLUNTEER_SG = ['Name', 'AgencyName', 'Address','StartDateTime', 'None', 'RedirectionURL', 'None', 'OpportunityImage']
 
 def append_db(json_input):
     PLATFORM, PORTAL = '', ''
@@ -29,14 +29,15 @@ def append_db(json_input):
                 VACANCIES = i[PLATFORM[4]]
             else:
                 VACANCIES = 0
-            SIGNUPLINK = "\'" + convert_link(i[PLATFORM[5]], data['source']) + "\'"
+            SIGNUPLINK = "\'" + convert_link(i[PLATFORM[5]], data['source'], False) + "\'"
             if PLATFORM[6] != 'None':
                 SUITABILITY = "\'" + i[PLATFORM[6]] + "\'"
             else:
                 SUITABILITY = "\'None\'"
+            IMGLINK = "\'" + convert_link(i[PLATFORM[7]], data['source'], True) + "\'"
 
-            COMMAND=f'''INSERT INTO VolunteerOpportunities(Portal, EventName, Organizer, EventLocation, EventDate, Vacancies, SignupLink, Suitability)
-                        VALUES({PORTAL},{EVENTNAME},{ORGANIZER},{EVENTLOCATION},{EVENTDATE},{VACANCIES},{SIGNUPLINK},{SUITABILITY})'''
+            COMMAND=f'''INSERT INTO VolunteerOpportunities(Portal, EventName, Organizer, EventLocation, EventDate, Vacancies, SignupLink, Suitability, ImageURL)
+                        VALUES({PORTAL},{EVENTNAME},{ORGANIZER},{EVENTLOCATION},{EVENTDATE},{VACANCIES},{SIGNUPLINK},{SUITABILITY},{IMGLINK})'''
 
             connection.execute(COMMAND)
 
