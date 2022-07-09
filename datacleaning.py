@@ -246,8 +246,10 @@ def convert_datetime(val, source):
         result = int(''.join(number_list)) // 1000
         return result
 
-def convert_link(val, source):
+def convert_link(val, source, img):
     if source == 'giving-sg':
         return "https://www.giving.sg" + val
-    else:
+    elif img == False:
         return "https://www.volunteer.gov.sg" + val
+    else:
+        return val
