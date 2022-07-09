@@ -1,3 +1,4 @@
+from datetime import datetime
 import os, logging, threading, schedule, random
 from time import time, sleep
 from dotenv import load_dotenv
@@ -13,6 +14,20 @@ CHANNEL_ID = int(os.getenv('CHANNEL_ID'))
 DIRECTORY = os.getenv('DIRECTORY')
 TABLE_NAME = os.getenv('TABLE_NAME')
 DEBUG = True
+
+announcement_key_mappings = {
+    'Portal': 'Website',
+    'EventName': 'Event Title',
+    'Organizer': 'Organiser',
+    'EventLocation': 'Event Location',
+    'Event Date': 'Event Date and Time',
+}
+
+announcement_value_mappings = {
+    'GIVING_SG': 'giving.sg',
+    'VOLUNTEER_SG': 'volunteer.gov.sg',
+    'None': 'Open to All',
+}
 
 engine, headers = database_init(DIRECTORY,TABLE_NAME)
 
@@ -56,17 +71,22 @@ def send_welcome(message):
 
 def send_announcement_to(chat_id):
     results = fetch(engine, TABLE_NAME, 'EventDate', '<=', time() + 864000)
-    results_sample = random.sample(results, 10)
+    results_sample = random.sample(results, 2)
     # DEBUG and logger.info(results_sample)
 
-    for result in results_sample:
+    for i, result in enumerate(results_sample):
+        DEBUG and logger.info(i)
         DEBUG and logger.info(result)
-        DEBUG and logger.info(headers)
         caption_msg = ''
         signup = ''
+        # ['Portal', 'EventName', 'Organizer', 'EventLocation', 'EventDate', 'Vacancies', 'SignupLink', 'Suitability', 'ShortDesc', 'id']
         for key, value in zip(headers, result):
-            if key != 'SignupLink' and value != 'None':
-                caption_msg += f'{key}: {value}\n'
+            if key == 'EventDate':
+                date_value = datetime.fromtimestamp(float(value)).strftime('%a, %d %b %Y')
+                caption_msg += f'{announcement_key_mappings.get(key, key)}: {date_value}\n'
+            elif key != 'SignupLink':
+                if value:
+                    caption_msg += f'{announcement_key_mappings.get(key, key)}: {announcement_value_mappings.get(value, value)}\n'
             else:
                 signup = value
         DEBUG and logger.info(caption_msg)
