@@ -26,9 +26,11 @@ def is_subscribed(channel_id, user_id):
         response = bot.get_chat_member(channel_id, user_id)
         DEBUG and logger.info(response)
         return response.status not in ['left', 'banned']
-    except ApiTelegramException as e:
-        if e.result_json['description'] == 'Bad Request: user not found':
+    except ApiTelegramException as error:
+        if error.result_json['description'] == 'Bad Request: user not found':
             return False
+        else:
+            raise error
 
 def send_announcement():
     announcement_link = InlineKeyboardMarkup()
@@ -61,4 +63,10 @@ bot.set_my_commands([
     BotCommand('start','Initialisation'),
 ])
 
-bot.infinity_polling()
+def main():
+    
+    bot.infinity_polling()
+
+if __name__ == '__main__':
+    main()
+
