@@ -226,6 +226,8 @@ geolocator = Nominatim(user_agent="heart_bot")
 def nearest(address):
     if address in ["Multiple Locations", "Islandwide", "Downtown Core", "Changi", "Virtual"]:
         return address.upper()
+    elif address == "Singapore 397631":
+        return "STADIUM"
     else:
         location = geolocator.geocode(address)
         try:
@@ -236,6 +238,8 @@ def nearest(address):
             return min(mapped, key = lambda t: t[1])[0]
         except:
             return ''
+
+print(nearest(''))
 
 def convert_datetime(val, source):
     if source == 'giving-sg':
