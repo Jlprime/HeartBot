@@ -1,4 +1,3 @@
-import string
 import sqlalchemy as db
 
 def database_init(directory, table_name):
