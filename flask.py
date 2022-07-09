@@ -20,25 +20,28 @@ def append_db(json_input):
 
     with engine.connect() as connection:
         for i in entries:
-            EVENTNAME = "\'" + i[PLATFORM[0]] + "\'"
-            ORGANIZER = "\'" + i[PLATFORM[1]] + "\'"
-            #print(i[PLATFORM[2]])
-            EVENTLOCATION = "\'" + nearest(i[PLATFORM[2]]) + "\'"
-            EVENTDATE = "\'" + str(convert_datetime(i[PLATFORM[3]], data['source'])) + "\'"
-            if PLATFORM[4] != 'None':
-                VACANCIES = i[PLATFORM[4]]
-            else:
-                VACANCIES = 0
-            SIGNUPLINK = "\'" + convert_link(i[PLATFORM[5]], data['source'], False) + "\'"
-            if PLATFORM[6] != 'None':
-                SUITABILITY = "\'" + i[PLATFORM[6]] + "\'"
-            else:
-                SUITABILITY = "\'None\'"
-            IMGLINK = "\'" + convert_link(i[PLATFORM[7]], data['source'], True) + "\'"
+            try:
+                EVENTNAME = "\'" + i[PLATFORM[0]] + "\'"
+                ORGANIZER = "\'" + i[PLATFORM[1]] + "\'"
+                #print(i[PLATFORM[2]])
+                EVENTLOCATION = "\'" + nearest(i[PLATFORM[2]]) + "\'"
+                EVENTDATE = "\'" + str(convert_datetime(i[PLATFORM[3]], data['source'])) + "\'"
+                if PLATFORM[4] != 'None':
+                    VACANCIES = i[PLATFORM[4]]
+                else:
+                    VACANCIES = 0
+                SIGNUPLINK = "\'" + convert_link(i[PLATFORM[5]], data['source'], False) + "\'"
+                if PLATFORM[6] != 'None':
+                    SUITABILITY = "\'" + i[PLATFORM[6]] + "\'"
+                else:
+                    SUITABILITY = "\'None\'"
+                IMGLINK = "\'" + convert_link(i[PLATFORM[7]], data['source'], True) + "\'"
+            except:
+                continue
 
             COMMAND=f'''INSERT INTO VolunteerOpportunities(Portal, EventName, Organizer, EventLocation, EventDate, Vacancies, SignupLink, Suitability, ImageURL)
                         VALUES({PORTAL},{EVENTNAME},{ORGANIZER},{EVENTLOCATION},{EVENTDATE},{VACANCIES},{SIGNUPLINK},{SUITABILITY},{IMGLINK})'''
 
             connection.execute(COMMAND)
 
-append_db('test.json')
+append_db('giving_sg_data.json')

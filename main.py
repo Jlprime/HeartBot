@@ -71,7 +71,7 @@ def send_welcome(message):
 
 def send_announcement_to(chat_id):
     results = fetch(engine, TABLE_NAME, 'EventDate', '<=', time() + 864000)
-    results_sample = random.sample(results, 2)
+    results_sample = random.sample(results, 3)
     # DEBUG and logger.info(results_sample)
 
     for i, result in enumerate(results_sample):
