@@ -1,16 +1,21 @@
-import os
-import logging
-from time import time
+from curses.ascii import TAB
+import os, logging, threading, schedule, random
+from time import time, sleep
 from dotenv import load_dotenv
 from telebot import TeleBot
 from telebot.types import BotCommand, InlineKeyboardMarkup, InlineKeyboardButton
 from telebot.apihelper import ApiTelegramException
+from fetch import database_init, fetch
 
 load_dotenv()
 
 TOKEN = os.getenv('TOKEN')
-CHANNEL_ID = -1001656350099
+CHANNEL_ID = int(os.getenv('CHANNEL_ID'))
+DIRECTORY = os.getenv('DIRECTORY')
+TABLE_NAME = os.getenv('TABLE_NAME')
 DEBUG = False
+
+engine, headers = database_init(DIRECTORY,TABLE_NAME)
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -32,11 +37,6 @@ def is_subscribed(channel_id, user_id):
         else:
             raise error
 
-def send_announcement():
-    announcement_link = InlineKeyboardMarkup()
-    announcement_link.add(InlineKeyboardButton('Sign me up!'))
-    bot.send_message(chat_id=CHANNEL_ID,text=f"bot test {time()}")
-
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_id = message.from_user.id
@@ -55,18 +55,27 @@ def send_welcome(message):
     else:
         bot.send_message(chat_id=message.chat.id,text="Welcome!")
 
-@bot.callback_query_handler(func=lambda call: True)
-def handle_callback(call):
-    pass
+def send_announcement_to(chat_id):
+    results = fetch(engine, TABLE_NAME, 'EventDate', '<=', time() + 864000)
+    results_sample = random.sample(results, 10)
+
+    
+
+    announcement_link = InlineKeyboardMarkup()
+    announcement_link.add(InlineKeyboardButton('Sign me up!', url="www.google.com"))
+    bot.send_message(chat_id=chat_id,text=f"bot test {time()}",reply_markup=announcement_link)
 
 bot.set_my_commands([
     BotCommand('start','Initialisation'),
 ])
 
-def main():
-    
-    bot.infinity_polling()
-
 if __name__ == '__main__':
-    main()
+    # CHANGE ANNOUNCEMENT INTERVAL
+    schedule.every(10).seconds.do(send_announcement_to, CHANNEL_ID).tag(CHANNEL_ID)
 
+    threading.Thread(target=bot.infinity_polling, name='bot_infinity_polling', daemon=True).start()
+    while True:
+        schedule.run_pending()
+        sleep(1)
+
+    
