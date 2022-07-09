@@ -1,7 +1,9 @@
 from typing import List
+from numpy import number
 from sqlalchemy import create_engine, insert, text
 import json
 from collections.abc import MutableMapping
+from datetime import datetime
 
 engine = create_engine('sqlite:///scraped_data.db')
 
@@ -33,7 +35,7 @@ def append_db(json_input):
             EVENTNAME = "\'" + i[PLATFORM[0]] + "\'"
             ORGANIZER = "\'" + i[PLATFORM[1]] + "\'"
             EVENTLOCATION = "\'" + i[PLATFORM[2]].split()[-1] + "\'"
-            EVENTDATE = "\'" + i[PLATFORM[3]] + "\'"
+            EVENTDATE = "\'" + str(convert_datetime(i[PLATFORM[3]], data['source'])) + "\'"
             if PLATFORM[4] != 'None':
                 VACANCIES = i[PLATFORM[4]]
             else:
@@ -65,6 +67,15 @@ def _flatten_dict_gen(d, parent_key, sep):
 
 def flatten_dict(d: MutableMapping, parent_key: str = '', sep: str = '.'):
     return dict(_flatten_dict_gen(d, parent_key, sep))
+
+def convert_datetime(val, source):
+    if source == 'giving-sg':
+        result = int(datetime.strptime(val, '%a, %d %b %Y').timestamp())
+        return result
+    else:
+        number_list = [s for s in val if s.isdigit()]
+        result = int(''.join(number_list)) // 1000
+        return result
 
 
 append_db('test.json')
