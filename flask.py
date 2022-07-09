@@ -22,7 +22,7 @@ def append_db(json_input):
         for i in entries:
             EVENTNAME = "\'" + i[PLATFORM[0]] + "\'"
             ORGANIZER = "\'" + i[PLATFORM[1]] + "\'"
-            print(i[PLATFORM[2]])
+            #print(i[PLATFORM[2]])
             EVENTLOCATION = "\'" + nearest(i[PLATFORM[2]]) + "\'"
             EVENTDATE = "\'" + str(convert_datetime(i[PLATFORM[3]], data['source'])) + "\'"
             if PLATFORM[4] != 'None':

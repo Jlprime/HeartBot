@@ -250,4 +250,4 @@ def convert_link(val, source):
     if source == 'giving-sg':
         return "https://www.giving.sg" + val
     else:
-        return "https://www.volunteer.gov.sg/" + val
+        return "https://www.volunteer.gov.sg" + val
