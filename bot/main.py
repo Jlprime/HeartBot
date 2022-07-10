@@ -85,8 +85,8 @@ def command_welcome(message):
             text=f"Hey there {message.from_user.first_name}, Click the link below to join our announcements channel",
             reply_markup=link)
     else:
-        WELCOME = "<b>Welcome to Care-ggregate! </b>💞🤲💞\n\nType /search to get started, or head over to the Announcements Channel for the latest oppotunities."
-        bot.send_message(chat_id=message.chat.id,text=WELCOME)
+        welcome_msg = "<b>Welcome to Care-ggregate! </b>💞🤲💞\n\nType /search to get started, or head over to the Announcements Channel for the latest oppotunities."
+        bot.send_message(chat_id=message.chat.id,text=welcome_msg,parse_mode='HTML')
 
 def send_message_to(chat_id, results):
     DEBUG and logger.info(results)
@@ -104,6 +104,8 @@ def send_message_to(chat_id, results):
                 title_msg += f'📌 <b>{value}</b>\n'
             elif key == 'Organizer':
                 title_msg += f'<em>{value}</em>\n\n'
+            elif key == 'EventLocation':
+                caption_msg += f'<b>{announcement_key_mappings.get(key, key)}</b>: {announcement_value_mappings.get(value, value).title()}\n'
             elif key == 'ImageURL':
                 image_url = value
             elif key != 'SignupLink':
@@ -139,7 +141,7 @@ def handle_callback(call):
 def handle_start_calendar(call):
     result, key, step = DetailedTelegramCalendar(calendar_id=0,min_date=dt.date.today()).process(call.data)
     if not result and key:
-        bot.edit_message_text(f"<b>Search</b> \n\nSelect the starting date: {LSTEP[step]}",
+        bot.edit_message_text(f"<b>Search</b> \n\nSelect the starting date: <b>{LSTEP[step].capitalize()}</b>",
                               call.message.chat.id,
                               call.message.message_id,
                               reply_markup=key,parse_mode='HTML')
@@ -155,12 +157,12 @@ def handle_start_calendar(call):
 def handle_end_calendar(call):
     result, key, step = DetailedTelegramCalendar(calendar_id=1, min_date=global_query._event_start).process(call.data)
     if not result and key:
-        bot.edit_message_text(f"<b>Search</b> \n\nSelect the end date: {LSTEP[step]}",
+        bot.edit_message_text(f"<b>Search</b> \n\nSelect the end date: <b>{LSTEP[step].capitalize()}</b>",
                               call.message.chat.id,
                               call.message.message_id,
                               reply_markup=key,parse_mode='HTML')
     elif result:
-        success = bot.edit_message_text(f"You selected {result} as the end date.",
+        bot.edit_message_text(f"You selected {result} as the end date.",
                               call.message.chat.id,
                               call.message.message_id)
         global_query._event_end = result
@@ -183,14 +185,14 @@ def search_event_start_date(message):
     DEBUG and logger.info(global_query.portal)
     calendar, step = DetailedTelegramCalendar(calendar_id=0, min_date=dt.date.today()).build()
     bot.send_message(message.chat.id,
-                     f"<b>Search</b> \n\nSelect the starting date: {LSTEP[step]}",
+                     f"<b>Search</b> \n\nSelect the starting date: <b>{LSTEP[step].capitalize()}</b>",
                      reply_markup=calendar,parse_mode='HTML')
  
 def search_event_end_date(message):
     DEBUG and logger.info(global_query.event_start_date)
     calendar, step = DetailedTelegramCalendar(calendar_id=1, min_date=global_query._event_start).build()
     bot.send_message(message.chat.id,
-                     f"<b>Search</b> \n\nSelect the end date: {LSTEP[step]}",
+                     f"<b>Search</b> \n\nSelect the end date: <b>{LSTEP[step].capitalize()}</b>",
                      reply_markup=calendar,parse_mode='HTML')
 
 def convert_portal_to_fetch_query(portal):
