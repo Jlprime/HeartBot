@@ -5,7 +5,7 @@ import json
 engine = create_engine('sqlite:///scraped_data.db')
 
 GIVING_SG = ['Title','DisplayName','Town','Duration','Openings','VolunteerUrl','Suitabilities', 'Url']
-VOLUNTEER_SG = ['Name', 'AgencyName', 'Address','StartDateTime', 'None', 'RedirectionURL', 'None', 'OpportunityImage']
+VOLUNTEER_SG = ['Name', 'AgencyName', 'Location Postal','StartDateTime', 'Available Slots', 'RedirectionURL', 'None', 'OpportunityImage']
 
 def append_db(json_input):
     PLATFORM, PORTAL = '', ''
@@ -26,10 +26,7 @@ def append_db(json_input):
                 #print(i[PLATFORM[2]])
                 EVENTLOCATION = "\'" + nearest(i[PLATFORM[2]]) + "\'"
                 EVENTDATE = "\'" + str(convert_datetime(i[PLATFORM[3]], data['source'])) + "\'"
-                if PLATFORM[4] != 'None':
-                    VACANCIES = i[PLATFORM[4]]
-                else:
-                    VACANCIES = 0
+                VACANCIES = i[PLATFORM[4]]
                 SIGNUPLINK = "\'" + convert_link(i[PLATFORM[5]], data['source'], False) + "\'"
                 if PLATFORM[6] != 'None':
                     SUITABILITY = "\'" + i[PLATFORM[6]] + "\'"
@@ -44,4 +41,4 @@ def append_db(json_input):
 
             connection.execute(COMMAND)
 
-append_db('giving_sg_data.json')
+append_db('vol_data.json')
