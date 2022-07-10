@@ -1,0 +1,8 @@
+version: "3.9"
+services:
+  heartbot:
+    build: ./
+    volumes:
+      - ./:/srv/bot:ro
+    working_dir: /srv/bot
+    entrypoint: ["python3", "main.py"]
