@@ -90,6 +90,7 @@ def command_welcome(message):
 def send_message_to(chat_id, results):
     DEBUG and logger.info(results)
     for i, result in enumerate(results):
+        title_msg = ''
         caption_msg = ''
         signup = ''
         image_url = ''
@@ -98,6 +99,10 @@ def send_message_to(chat_id, results):
             if key == 'EventDate':
                 date_value = dt.datetime.fromtimestamp(float(value)).strftime('%a, %d %b %Y')
                 caption_msg += f'{announcement_key_mappings.get(key, key)}: {date_value}\n'
+            elif key == 'EventName':
+                title_msg += f'<b>{value}</b>\n'
+            elif key == 'Organizer':
+                title_msg += f'<em>{value}</em>\n\n'
             elif key == 'ImageURL':
                 image_url = value
             elif key != 'SignupLink':
@@ -105,10 +110,12 @@ def send_message_to(chat_id, results):
                     caption_msg += f'{announcement_key_mappings.get(key, key)}: {announcement_value_mappings.get(value, value)}\n'
             else:
                 signup = value
+        main_msg = title_msg + caption_msg
+
         DEBUG and logger.info(f'Current Iteration: {i}\nPayload: {result}')
         announcement_link = InlineKeyboardMarkup()
         announcement_link.add(InlineKeyboardButton('Sign me up!', url=signup))
-        bot.send_photo(chat_id=chat_id,photo=image_url,caption=caption_msg,reply_markup=announcement_link)
+        bot.send_photo(chat_id=chat_id,photo=image_url,caption=main_msg,reply_markup=announcement_link,parse_mode='HTML')
 
 def send_announcement_to(samples):
     results = fetch(engine, TABLE_NAME, 'EventDate', '<=', time() + 864000)

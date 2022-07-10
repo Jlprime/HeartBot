@@ -1,8 +1,8 @@
-from sqlalchemy import create_engine, insert, text
+from sqlalchemy import create_engine
 from datacleaning import nearest, convert_datetime, convert_link
 import json
 
-engine = create_engine('sqlite:///scraped_data.db')
+engine = create_engine('sqlite:///./bot/scraped_data.db')
 
 GIVING_SG = ['Title','DisplayName','Town','Duration','Openings','VolunteerUrl','Suitabilities', 'Url']
 VOLUNTEER_SG = ['Name', 'AgencyName', 'Location Postal','StartDateTime', 'Available Slots', 'RedirectionURL', 'None', 'OpportunityImage']
@@ -42,3 +42,4 @@ def append_db(json_input):
             connection.execute(COMMAND)
 
 append_db('vol_data.json')
+append_db('giving_sg_data.json')
