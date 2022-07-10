@@ -7,7 +7,12 @@ def database_init(directory, table_name):
 
 def fetch(engine, table_name, header, operator, val, qty='*'):
     with engine.connect() as connection:
-        COMMAND = f'SELECT {qty} FROM {table_name} WHERE {header} {operator} {val}'
+        if type(header) == list:
+            COMMAND = f'SELECT {qty} FROM {table_name} WHERE {header[0]} {operator[0]} {val[0]}'
+            for i in range(1, len(header)):
+                COMMAND += f' AND {header[i]} {operator[i]} {val[i]}'
+        else:        
+            COMMAND = f'SELECT {qty} FROM {table_name} WHERE {header} {operator} {val}'
         resultProxy = connection.execute(COMMAND)
         resultFetch = resultProxy.fetchall()
         return resultFetch
