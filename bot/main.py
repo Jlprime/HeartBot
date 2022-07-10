@@ -78,14 +78,15 @@ def command_welcome(message):
         InviteLink = invite.invite_link # Get the actual invite link from 'invite' class
         
         link = InlineKeyboardMarkup() # Created Inline Keyboard Markup
-        link.add(InlineKeyboardButton("Join the channel", url=InviteLink)) # Added Invite Link to Inline Keyboard
+        link.add(InlineKeyboardButton("📣 Join the Channel 📣", url=InviteLink)) # Added Invite Link to Inline Keyboard
         
         bot.send_message(
             chat_id=message.chat.id,
             text=f"Hey there {message.from_user.first_name}, Click the link below to join our announcements channel",
             reply_markup=link)
     else:
-        bot.send_message(chat_id=message.chat.id,text="Welcome!")
+        WELCOME = "<b>Welcome to Care-ggregate! </b>💞🤲💞\n\nType /search to get started, or head over to the Announcements Channel for the latest oppotunities."
+        bot.send_message(chat_id=message.chat.id,text=WELCOME)
 
 def send_message_to(chat_id, results):
     DEBUG and logger.info(results)
@@ -98,23 +99,23 @@ def send_message_to(chat_id, results):
         for key, value in zip(headers, result):
             if key == 'EventDate':
                 date_value = dt.datetime.fromtimestamp(float(value)).strftime('%a, %d %b %Y')
-                caption_msg += f'{announcement_key_mappings.get(key, key)}: {date_value}\n'
+                caption_msg += f'<b>{announcement_key_mappings.get(key, key)}</b>: {date_value}\n'
             elif key == 'EventName':
-                title_msg += f'<b>{value}</b>\n'
+                title_msg += f'📌 <b>{value}</b>\n'
             elif key == 'Organizer':
                 title_msg += f'<em>{value}</em>\n\n'
             elif key == 'ImageURL':
                 image_url = value
             elif key != 'SignupLink':
                 if value:
-                    caption_msg += f'{announcement_key_mappings.get(key, key)}: {announcement_value_mappings.get(value, value)}\n'
+                    caption_msg += f'<b>{announcement_key_mappings.get(key, key)}</b>: {announcement_value_mappings.get(value, value)}\n'
             else:
                 signup = value
         main_msg = title_msg + caption_msg
 
         DEBUG and logger.info(f'Current Iteration: {i}\nPayload: {result}')
         announcement_link = InlineKeyboardMarkup()
-        announcement_link.add(InlineKeyboardButton('Sign me up!', url=signup))
+        announcement_link.add(InlineKeyboardButton('❤️‍🔥 Sign Me Up! ❤️‍🔥', url=signup))
         bot.send_photo(chat_id=chat_id,photo=image_url,caption=main_msg,reply_markup=announcement_link,parse_mode='HTML')
 
 def send_announcement_to(samples):
@@ -138,12 +139,12 @@ def handle_callback(call):
 def handle_start_calendar(call):
     result, key, step = DetailedTelegramCalendar(calendar_id=0,min_date=dt.date.today()).process(call.data)
     if not result and key:
-        bot.edit_message_text(f"Select the starting date: {LSTEP[step]}",
+        bot.edit_message_text(f"<b>Search</b> \n\nSelect the starting date: {LSTEP[step]}",
                               call.message.chat.id,
                               call.message.message_id,
-                              reply_markup=key)
+                              reply_markup=key,parse_mode='HTML')
     elif result:
-        bot.edit_message_text(f"You selected {result} as the starting date",
+        bot.edit_message_text(f"You selected {result} as the starting date.",
                               call.message.chat.id,
                               call.message.message_id)
         global_query._event_start = result + dt.timedelta(days=1)
@@ -154,12 +155,12 @@ def handle_start_calendar(call):
 def handle_end_calendar(call):
     result, key, step = DetailedTelegramCalendar(calendar_id=1, min_date=global_query._event_start).process(call.data)
     if not result and key:
-        bot.edit_message_text(f"Select the end date: {LSTEP[step]}",
+        bot.edit_message_text(f"<b>Search</b> \n\nSelect the end date: {LSTEP[step]}",
                               call.message.chat.id,
                               call.message.message_id,
-                              reply_markup=key)
+                              reply_markup=key,parse_mode='HTML')
     elif result:
-        success = bot.edit_message_text(f"You selected {result} as the end date",
+        success = bot.edit_message_text(f"You selected {result} as the end date.",
                               call.message.chat.id,
                               call.message.message_id)
         global_query._event_end = result
@@ -170,27 +171,27 @@ def handle_end_calendar(call):
 def command_search(message):
     global_query.reset()
     row_one, row_two, row_three = [], [], []
-    row_one.append(InlineKeyboardButton('giving.sg',callback_data='portal giving'))
-    row_two.append(InlineKeyboardButton('volunteer.gov.sg',callback_data='portal volunteer'))
+    row_one.append(InlineKeyboardButton('Giving.sg',callback_data='portal giving'))
+    row_two.append(InlineKeyboardButton('SG Cares',callback_data='portal volunteer'))
     row_three.append(InlineKeyboardButton('Both', callback_data='portal both'))
     reply_markup = InlineKeyboardMarkup([row_one,row_two,row_three])
 
-    bot.send_message(message.chat.id,text='Filter by Website:',reply_markup=reply_markup)
+    bot.send_message(message.chat.id,text='<b>Search</b> \n\nYou are filtering by platform:',reply_markup=reply_markup,parse_mode='HTML')
 
 
 def search_event_start_date(message):
     DEBUG and logger.info(global_query.portal)
     calendar, step = DetailedTelegramCalendar(calendar_id=0, min_date=dt.date.today()).build()
     bot.send_message(message.chat.id,
-                     f"Select the starting date: {LSTEP[step]}",
-                     reply_markup=calendar)
+                     f"<b>Search</b> \n\nSelect the starting date: {LSTEP[step]}",
+                     reply_markup=calendar,parse_mode='HTML')
  
 def search_event_end_date(message):
     DEBUG and logger.info(global_query.event_start_date)
     calendar, step = DetailedTelegramCalendar(calendar_id=1, min_date=global_query._event_start).build()
     bot.send_message(message.chat.id,
-                     f"Select the end date: {LSTEP[step]}",
-                     reply_markup=calendar)
+                     f"<b>Search</b> \n\nSelect the end date: {LSTEP[step]}",
+                     reply_markup=calendar,parse_mode='HTML')
 
 def convert_portal_to_fetch_query(portal):
     if portal == 'both':
@@ -211,13 +212,13 @@ def search_fetch(message):
     send_message_to(message.chat.id,results_sample)
 
 bot.set_my_commands([
-    BotCommand('start','Start up the bot'),
-    BotCommand('search', 'Find specific opportunities')
+    BotCommand('start','Start up Care-ggregate.'),
+    BotCommand('search', 'Find the opportunities you want.')
 ])
 
 if __name__ == '__main__':
     # CHANGE ANNOUNCEMENT INTERVAL
-    # schedule.every(30).seconds.do(send_announcement_to, 2).tag(CHANNEL_ID)
+    schedule.every().day.do(send_announcement_to, 4).tag(CHANNEL_ID)
 
     threading.Thread(target=bot.infinity_polling, name='bot_infinity_polling', daemon=True).start()
     while True:
