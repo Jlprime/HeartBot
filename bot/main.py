@@ -220,6 +220,8 @@ bot.set_my_commands([
 
 if __name__ == '__main__':
     # CHANGE ANNOUNCEMENT INTERVAL
+    send_announcement_to(4)
+
     schedule.every().day.do(send_announcement_to, 4).tag(CHANNEL_ID)
 
     threading.Thread(target=bot.infinity_polling, name='bot_infinity_polling', daemon=True).start()
