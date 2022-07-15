@@ -1,6 +1,7 @@
 import datetime as dt
 import os, logging, threading, schedule, random
 from time import time, sleep
+from math import ceil
 from dotenv import load_dotenv
 from telebot import TeleBot
 from telebot.types import BotCommand, InlineKeyboardMarkup, InlineKeyboardButton
@@ -106,6 +107,8 @@ def send_message_to(chat_id, results):
                 title_msg += f'<em>{value}</em>\n\n'
             elif key == 'EventLocation':
                 caption_msg += f'<b>{announcement_key_mappings.get(key, key)}</b>: {announcement_value_mappings.get(value, value).title()}\n'
+            elif key == 'Vacancies':
+                caption_msg += f'<b>{announcement_key_mappings.get(key, key)}</b>: {ceil(announcement_value_mappings.get(value, value))}\n'
             elif key == 'ImageURL':
                 image_url = value
             elif key != 'SignupLink':
@@ -121,7 +124,13 @@ def send_message_to(chat_id, results):
         bot.send_photo(chat_id=chat_id,photo=image_url,caption=main_msg,reply_markup=announcement_link,parse_mode='HTML')
 
 def send_announcement_to(samples):
-    results = fetch(engine, TABLE_NAME, 'EventDate', '<=', time() + 864000)
+    results = fetch(
+        engine, 
+        TABLE_NAME, 
+        ['EventDate', 'EventDate'],
+        ['>=', '<='],
+        [time() + 86400, time() + 86400 * 14]
+    )
     results_sample = random.sample(results, samples)
     send_message_to(CHANNEL_ID,results_sample)
 
@@ -206,7 +215,11 @@ def convert_portal_to_fetch_query(portal):
 def search_fetch(message):
     portal, start, end = global_query.get_all_values()
     portal = convert_portal_to_fetch_query(portal)
-    results = fetch(engine, TABLE_NAME, ['Portal', 'EventDate', 'EventDate'], ["LIKE", ">=", "<="], [portal, start, end])
+    results = fetch(engine, TABLE_NAME,
+        ['Portal', 'EventDate', 'EventDate', 'Vacancies'],
+        ["LIKE", ">=", "<=", '>='],
+        [portal, start, end, '1']
+    )
     if len(results) == 0:
         bot.send_message(message.chat.id,text="No opportunities found!")
         return
@@ -222,7 +235,7 @@ if __name__ == '__main__':
     # CHANGE ANNOUNCEMENT INTERVAL
     send_announcement_to(4)
 
-    schedule.every().day.do(send_announcement_to, 4).tag(CHANNEL_ID)
+    schedule.every().day.at('03:56').do(send_announcement_to, 4).tag(CHANNEL_ID)
 
     threading.Thread(target=bot.infinity_polling, name='bot_infinity_polling', daemon=True).start()
     while True:
